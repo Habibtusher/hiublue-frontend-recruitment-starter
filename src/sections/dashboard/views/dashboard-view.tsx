@@ -1,5 +1,13 @@
-'use client';
+"use client";
 
-export default function DashboardView(){
-  return <>Dashboard View</>;
+import DashboardSummary from "./dashboard-summary";
+import OffersTable from "./offer-list";
+
+export default function DashboardView() {
+  return (
+    <>
+      <DashboardSummary />
+      <OffersTable />
+    </>
+  );
 }
