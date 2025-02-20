@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AppBar,
@@ -23,6 +23,8 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import LockIcon from "@mui/icons-material/Lock";
 import { styled } from "@mui/system";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const drawerWidth = 260;
 
@@ -42,7 +44,8 @@ const Main = styled("main")(({ theme }) => ({
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  const { user } = useAuth();
+  const router = useRouter();
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -111,7 +114,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           layout="intrinsic"
           width={40}
           height={40}
-
         />
       </Toolbar>
 
@@ -147,7 +149,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </List>
     </Box>
   );
-
+  useEffect(() => {
+    if (!user && user == null) {
+      router.push("/login");
+    }
+  }, [user]);
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
