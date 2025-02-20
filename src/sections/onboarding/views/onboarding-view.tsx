@@ -15,8 +15,6 @@ import {
   FormLabel,
   Radio,
   RadioGroup,
-  Select,
-  MenuItem,
   TextField,
   Typography,
   InputAdornment,
@@ -27,9 +25,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-import { useAuth } from "@/context/AuthContext";
 
-// Validation Schema with all fields required
+import CustomSnackbar from "@/components/common/CustomSnackbar";
+
 const schema = z.object({
   planType: z.enum(["pay_as_you_go", "monthly", "yearly"], {
     required_error: "Plan Type is required",
@@ -45,41 +43,41 @@ type FormData = z.infer<typeof schema>;
 export default function OnbordingView() {
   const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const { token } = useAuth();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [severity, setSeverity] = useState<"success" | "error">("success");
   const [search, setSearch] = useState("");
-
-
-  useEffect(() => {
-      if (search.length < 3) return; // Avoid excessive API calls
-      
-      const fetchUsers = async () => {
-        try {
-          const response = await axios.get(
-            `https://dummy-1.hiublue.com/api/users?search=${search}`,
-            API_HEADERS
-          );
-          setUsers(response.data.data);
-        } catch (error) {
-          console.error("Error fetching users:", error);
-        }
-      };
-  
-      fetchUsers();
-    }, [search]);
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
-
+  const token = localStorage.getItem("token");
   const API_HEADERS = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   };
+  useEffect(() => {
+    if (search.length < 3) return;
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(
+          `https://dummy-1.hiublue.com/api/users?search=${search}`,
+          API_HEADERS
+        );
+        setUsers(response.data.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [search]);
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -96,9 +94,16 @@ export default function OnbordingView() {
         payload,
         API_HEADERS
       );
-      console.log("Offer Created Successfully:", response.data);
-    } catch (error) {
+      setSnackbarMessage(response?.data?.message);
+      setSeverity("success");
+      setOpenSnackbar(true);
+      reset();
+      setSelectedDate(null);
+    } catch (error: any) {
       console.error("Error creating offer:", error);
+      setSnackbarMessage(error.message as string);
+      setSeverity("error");
+      setOpenSnackbar(true);
     }
   };
 
@@ -110,7 +115,7 @@ export default function OnbordingView() {
           <Typography variant="h5" fontWeight="bold">
             Create Offer
           </Typography>
-          <Typography variant="body2" color="gray" >
+          <Typography variant="body2" color="gray">
             Send onboarding offer to new user
           </Typography>
         </Box>
@@ -123,7 +128,7 @@ export default function OnbordingView() {
         >
           {/* Plan Type */}
           <FormControl component="fieldset" error={!!errors.planType}>
-            <FormLabel sx={{paddingBottom:1}}>Plan Type</FormLabel>
+            <FormLabel sx={{ paddingBottom: 1 }}>Plan Type</FormLabel>
             <Controller
               name="planType"
               control={control}
@@ -155,7 +160,7 @@ export default function OnbordingView() {
 
           {/* Additions */}
           <FormControl component="fieldset" error={!!errors.additions}>
-            <FormLabel sx={{paddingBottom:1}}>Additions</FormLabel>
+            <FormLabel sx={{ paddingBottom: 1 }}>Additions</FormLabel>
             <Box>
               <FormControlLabel
                 control={
@@ -183,7 +188,7 @@ export default function OnbordingView() {
 
           {/* User Selection */}
           <FormControl fullWidth error={!!errors.user}>
-            <FormLabel sx={{paddingBottom:1}}>User</FormLabel>
+            <FormLabel sx={{ paddingBottom: 1 }}>User</FormLabel>
             <Controller
               name="user"
               control={control}
@@ -192,9 +197,11 @@ export default function OnbordingView() {
                   options={users}
                   getOptionLabel={(option) => option.name}
                   onInputChange={(_, value) => setSearch(value)}
-                  onChange={(_, newValue) => field.onChange(newValue?.id.toString() || "")}
+                  onChange={(_, newValue) =>
+                    field.onChange(newValue?.id.toString() || "")
+                  }
                   renderInput={(params) => (
-                    <TextField {...params}  variant="outlined" />
+                    <TextField {...params} variant="outlined" />
                   )}
                 />
               )}
@@ -204,10 +211,9 @@ export default function OnbordingView() {
             )}
           </FormControl>
 
-
           {/* Expired Date Picker */}
           <FormControl fullWidth error={!!errors.expired}>
-            <FormLabel sx={{paddingBottom:1}}>Expired</FormLabel>
+            <FormLabel sx={{ paddingBottom: 1 }}>Expired</FormLabel>
             <Controller
               name="expired"
               control={control}
@@ -229,7 +235,7 @@ export default function OnbordingView() {
 
           {/* Price Field */}
           <FormControl fullWidth error={!!errors.price}>
-            <FormLabel sx={{paddingBottom:1}}>Price</FormLabel>
+            <FormLabel sx={{ paddingBottom: 1 }}>Price</FormLabel>
             <TextField
               placeholder="Price"
               {...register("price")}
@@ -258,6 +264,13 @@ export default function OnbordingView() {
           </Button>
         </Box>
       </Card>
+
+      <CustomSnackbar
+        severity={severity}
+        message={snackbarMessage}
+        open={openSnackbar}
+        onClose={() => setOpenSnackbar(false)}
+      />
     </LocalizationProvider>
   );
 }

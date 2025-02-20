@@ -21,30 +21,24 @@ export default function DashboardSummary() {
   const [data, setData] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [filter, setFilter] = useState("this-week");
-  const { token } = useAuth();
-  const [loading, setLoading] = useState(true); // Loading state for fetching data
-
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
   const API_HEADERS = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   };
-
-  // Fetch data on filter change, but only if token is available
   useEffect(() => {
-    if (!token) return; // If token is not available, do not make the request
+    if (!token) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetching stats data
         const statsResponse = await axios.get(
           `https://dummy-1.hiublue.com/api/dashboard/summary?filter=${filter}`,
           API_HEADERS
         );
         setStats(statsResponse.data);
-
-        // Fetching other data
         const dataResponse = await axios.get(
           `https://dummy-1.hiublue.com/api/dashboard/stat?filter=${filter}`,
           API_HEADERS
@@ -53,12 +47,12 @@ export default function DashboardSummary() {
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
-        setLoading(false); // Stop loading once data is fetched
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [filter, token]); // Re-run when token or filter changes
+  }, [filter, token]);
 
   const calculateChange = (current: number, previous: number) => {
     if (previous === 0) return 0; // Avoid division by zero
@@ -94,7 +88,12 @@ export default function DashboardSummary() {
   // Loading state handling
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -107,7 +106,7 @@ export default function DashboardSummary() {
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        flexDirection={{ xs: "column", sm: "row" }}
+        // flexDirection={{ xs: "column", sm: "row" }}
         mb={2}
       >
         <Typography variant="h5" fontWeight="bold">
@@ -130,7 +129,7 @@ export default function DashboardSummary() {
         {statItems.map((stat, index) => {
           const increase = parseFloat(stat.change as string) >= 0;
           return (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid item xs={12} sm={6} lg={4} key={index}>
               <Card sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
                 <Typography color="gray">{stat.title}</Typography>
                 <Typography variant="h4" fontWeight="bold">
