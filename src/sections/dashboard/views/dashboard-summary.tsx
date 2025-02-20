@@ -132,8 +132,8 @@ export default function DashboardSummary() {
             <Grid item xs={12} sm={6} lg={4} key={index}>
               <Card sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
                 <Typography color="gray">{stat.title}</Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {stat.value.toLocaleString()}
+                <Typography style={{fontWeight:700,fontSize:"32px"}} variant="h3" fontWeight="bold">
+                  {stat.value.toLocaleString()}k
                 </Typography>
                 <Box display="flex" alignItems="center" mt={1}>
                   {increase ? (
