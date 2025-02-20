@@ -22,7 +22,7 @@ export default function DashboardSummary() {
   const [stats, setStats] = useState<any>(null);
   const [filter, setFilter] = useState("this-week");
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
   const API_HEADERS = {
     headers: {
       Authorization: `Bearer ${token}`,

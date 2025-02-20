@@ -27,6 +27,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 
 import CustomSnackbar from "@/components/common/CustomSnackbar";
+import { useAuth } from "@/context/AuthContext";
 
 const schema = z.object({
   planType: z.enum(["pay_as_you_go", "monthly", "yearly"], {
@@ -47,7 +48,7 @@ export default function OnbordingView() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [severity, setSeverity] = useState<"success" | "error">("success");
   const [search, setSearch] = useState("");
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
   const API_HEADERS = {
     headers: {
       Authorization: `Bearer ${token}`,

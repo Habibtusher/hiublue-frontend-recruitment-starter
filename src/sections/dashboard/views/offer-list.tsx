@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useAuth } from "@/context/AuthContext";
 
 const OffersTable = () => {
   const [data, setData] = useState([]);
@@ -34,7 +35,7 @@ const OffersTable = () => {
   const [totalData, setTotalData] = useState(1);
 
   const [perPage, setPerPage] = useState(5);
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
   const API_HEADERS = {
     headers: {
       Authorization: `Bearer ${token}`,
