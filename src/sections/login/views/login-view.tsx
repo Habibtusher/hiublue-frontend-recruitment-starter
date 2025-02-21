@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import {
   Box,
@@ -17,6 +17,7 @@ import {
   Card,
 } from "@mui/material";
 import { useAuth } from "@/context/AuthContext";
+import useSnackbar from "@/app/hooks/useSnackbarHooks";
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
@@ -27,7 +28,9 @@ type FormData = z.infer<typeof schema>;
 
 export default function SignIn() {
   const { login, user } = useAuth();
+  const { showSnackbar, SnackbarComponent } = useSnackbar();
   const router = useRouter();
+
   useEffect(() => {
     if (user) {
       router.push("/dashboard");
@@ -48,10 +51,13 @@ export default function SignIn() {
       );
       login({ user: response.data.user, token: response.data.token });
       router.push("/dashboard");
+      showSnackbar("Logged in successfully", "success");
     } catch (error) {
+      showSnackbar("Login failed", "error");
       console.error("Login Failed:", error);
     }
   };
+
   return (
     <Card sx={{ maxWidth: 400, padding: 3, margin: "auto", marginTop: 5 }}>
       <Typography variant="h4">Sign In</Typography>
@@ -84,6 +90,7 @@ export default function SignIn() {
           Sign in
         </Button>
       </Box>
+      {SnackbarComponent}
     </Card>
   );
 }

@@ -24,6 +24,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
 
 const OffersTable = () => {
   const [data, setData] = useState([]);
@@ -43,20 +44,24 @@ const OffersTable = () => {
   };
 
   useEffect(() => {
+    if (!token) return;
     let query = `https://dummy-1.hiublue.com/api/offers?page=${page}&per_page=${perPage}`;
     if (search) query += `&search=${search}`;
     if (type !== "all") query += `&type=${type}`;
     if (status !== "all") query += `&status=${status}`;
-
-    fetch(query, API_HEADERS)
-      .then((res) => res.json())
-      .then((result) => {
-        setData(result.data || []);
-        setLastPage(result.meta?.last_page || 1);
-        setTotalData(result.meta?.total);
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, [page, search, type, status, perPage]);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(query, API_HEADERS);
+        console.log(response?.data);
+        setData(response?.data?.data || []);
+        setLastPage(response?.data?.meta?.last_page || 1);
+        setTotalData(response?.data?.meta?.total);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [page, search, type, status, perPage, token]);
 
   const getStatusChip = (status: string) => {
     const statusStyles: Record<

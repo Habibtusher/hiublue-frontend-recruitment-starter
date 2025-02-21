@@ -25,9 +25,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-
-import CustomSnackbar from "@/components/common/CustomSnackbar";
 import { useAuth } from "@/context/AuthContext";
+import useSnackbar from "@/app/hooks/useSnackbarHooks";
 
 const schema = z.object({
   planType: z.enum(["pay_as_you_go", "monthly", "yearly"], {
@@ -44,9 +43,7 @@ type FormData = z.infer<typeof schema>;
 export default function OnbordingView() {
   const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [severity, setSeverity] = useState<"success" | "error">("success");
+  const { showSnackbar, SnackbarComponent } = useSnackbar();
   const [search, setSearch] = useState("");
   const { token } = useAuth();
   const API_HEADERS = {
@@ -95,16 +92,13 @@ export default function OnbordingView() {
         payload,
         API_HEADERS
       );
-      setSnackbarMessage(response?.data?.message);
-      setSeverity("success");
-      setOpenSnackbar(true);
+      showSnackbar(response?.data?.message, "success");
+
       reset();
       setSelectedDate(null);
     } catch (error: any) {
       console.error("Error creating offer:", error);
-      setSnackbarMessage(error.message as string);
-      setSeverity("error");
-      setOpenSnackbar(true);
+      showSnackbar(error.message as string, "error");
     }
   };
 
@@ -266,12 +260,7 @@ export default function OnbordingView() {
         </Box>
       </Card>
 
-      <CustomSnackbar
-        severity={severity}
-        message={snackbarMessage}
-        open={openSnackbar}
-        onClose={() => setOpenSnackbar(false)}
-      />
+      {SnackbarComponent}
     </LocalizationProvider>
   );
 }
